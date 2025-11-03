@@ -1,0 +1,52 @@
+TOTAL_CANDIDATES=5
+
+CANDIDATE_1_START
+ID=1
+Name=John Smith
+Party=Democratic Party
+Education=MBA from Harvard University
+Age=52
+Manifesto=Focus on healthcare reform and education
+Votes=0
+CANDIDATE_1_END
+
+CANDIDATE_2_START
+ID=2
+Name=Sarah Johnson
+Party=Republican Party
+Education=Law Degree from Yale
+Age=48
+Manifesto=Economic growth and tax reforms
+Votes=0
+CANDIDATE_2_END
+
+CANDIDATE_3_START
+ID=3
+Name=Michael Brown
+Party=Independent
+Education=PhD in Economics
+Age=45
+Manifesto=Environmental protection and sustainability
+Votes=0
+CANDIDATE_3_END
+
+CANDIDATE_4_START
+ID=4
+Name=Emily Davis
+Party=Green Party
+Education=MS in Environmental Science
+Age=42
+Manifesto=Climate action and renewable energy
+Votes=0
+CANDIDATE_4_END
+
+CANDIDATE_5_START
+ID=5
+Name=Robert Wilson
+Party=Libertarian Party
+Education=BA in Political Science
+Age=55
+Manifesto=Individual freedom and limited government
+Votes=0
+CANDIDATE_5_END
+

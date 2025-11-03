@@ -46,6 +46,7 @@ void showStatistics();
 void exportResults();
 void resetElection();
 void addCandidate();
+void loadData();
 
 // Helper function prototypes
 void clearInputBuffer();
@@ -150,7 +151,7 @@ void showStatistics() {
     strftime(startStr, sizeof(startStr), "%Y-%m-%d %H:%M", timeInfo);
     
     timeInfo = localtime(&electionEndTime);
-    strftime(endStr, sizeof(endStr), "%Y-%m-%d %H:%M", endStr);
+    strftime(endStr, sizeof(endStr), "%Y-%m-%d %H:%M", timeInfo);
     
     printf("\nElection Period:\n");
     printf("   Start: %s\n", startStr);
@@ -264,9 +265,9 @@ void resetElection() {
     }
     
     printSuccess("Election reset successfully!");
-    printf("[+] All votes cleared\n");
-    printf("[+] All voting status reset\n");
-    printf("[+] Users can now vote again\n");
+    printf("All votes cleared\n");
+    printf("All voting status reset\n");
+    printf("Users can now vote again\n");
     
     logActivity("Election reset by admin");
     saveData();
@@ -371,6 +372,98 @@ int isElectionActive() {
     return 1; // Active
 }
 
+void loadData() {
+    FILE *fp;
+    char line[500];
+    
+    // Load users from text file
+    fp = fopen("users.txt", "r");
+    if(fp != NULL) {
+        if(fgets(line, sizeof(line), fp)) {
+            sscanf(line, "TOTAL_USERS=%d", &userCount);
+        }
+        
+        int idx = 0;
+        while(fgets(line, sizeof(line), fp) && idx < userCount) {
+            if(strstr(line, "USER_") && strstr(line, "_START")) {
+                // Read user data
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "FullName=%[^\n]", users[idx].fullName);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "NID=%s", users[idx].nidNumber);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Password=%s", users[idx].password);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "HasVoted=%d", &users[idx].hasVoted);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    long voteTime;
+                    sscanf(line, "VoteTime=%ld", &voteTime);
+                    users[idx].voteTime = (time_t)voteTime;
+                }
+                idx++;
+            }
+        }
+        fclose(fp);
+    }
+    
+    // Load candidates from text file
+    fp = fopen("candidates.txt", "r");
+    if(fp != NULL) {
+        if(fgets(line, sizeof(line), fp)) {
+            sscanf(line, "TOTAL_CANDIDATES=%d", &candidateCount);
+        }
+        
+        int idx = 0;
+        while(fgets(line, sizeof(line), fp) && idx < candidateCount) {
+            if(strstr(line, "CANDIDATE_") && strstr(line, "_START")) {
+                // Read candidate data
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "ID=%d", &candidates[idx].id);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Name=%[^\n]", candidates[idx].name);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Party=%[^\n]", candidates[idx].party);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Education=%[^\n]", candidates[idx].education);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Age=%d", &candidates[idx].age);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Manifesto=%[^\n]", candidates[idx].manifesto);
+                }
+                if(fgets(line, sizeof(line), fp)) {
+                    sscanf(line, "Votes=%d", &candidates[idx].votes);
+                }
+                idx++;
+            }
+        }
+        fclose(fp);
+    }
+    
+    // Load election configuration from text file
+    fp = fopen("election_config.txt", "r");
+    if(fp != NULL) {
+        long startTime, endTime;
+        if(fgets(line, sizeof(line), fp)) {
+            sscanf(line, "ElectionStartTime=%ld", &startTime);
+            electionStartTime = (time_t)startTime;
+        }
+        if(fgets(line, sizeof(line), fp)) {
+            sscanf(line, "ElectionEndTime=%ld", &endTime);
+            electionEndTime = (time_t)endTime;
+        }
+        fclose(fp);
+    }
+}
+
 void saveData() {
     FILE *fp;
     
@@ -405,6 +498,14 @@ void saveData() {
             fprintf(fp, "Votes=%d\n", candidates[i].votes);
             fprintf(fp, "CANDIDATE_%d_END\n\n", i+1);
         }
+        fclose(fp);
+    }
+    
+    // Save election configuration
+    fp = fopen("election_config.txt", "w");
+    if(fp != NULL) {
+        fprintf(fp, "ElectionStartTime=%ld\n", (long)electionStartTime);
+        fprintf(fp, "ElectionEndTime=%ld\n", (long)electionEndTime);
         fclose(fp);
     }
 }
@@ -448,50 +549,19 @@ void printInfo(char* message) {
 }
 
 // ============================================
-// MAIN FUNCTION (FOR TESTING)
+// MAIN FUNCTION
 // ============================================
 
 int main() {
-    // Initialize some test data
+    // Initialize election times
     time(&electionStartTime);
-    electionEndTime = electionStartTime + (7 * 24 * 60 * 60); // 7 days
+    electionEndTime = electionStartTime + (7 * 24 * 60 * 60); // 7 days from now
     
-    // Add some test candidates
-    candidateCount = 3;
-    
-    strcpy(candidates[0].name, "John Smith");
-    strcpy(candidates[0].party, "Democratic Party");
-    strcpy(candidates[0].education, "MBA from Harvard");
-    candidates[0].age = 52;
-    strcpy(candidates[0].manifesto, "Healthcare reform");
-    candidates[0].id = 1;
-    candidates[0].votes = 15;
-    
-    strcpy(candidates[1].name, "Sarah Johnson");
-    strcpy(candidates[1].party, "Republican Party");
-    strcpy(candidates[1].education, "Law Degree from Yale");
-    candidates[1].age = 48;
-    strcpy(candidates[1].manifesto, "Economic growth");
-    candidates[1].id = 2;
-    candidates[1].votes = 12;
-    
-    strcpy(candidates[2].name, "Michael Brown");
-    strcpy(candidates[2].party, "Independent");
-    strcpy(candidates[2].education, "PhD in Economics");
-    candidates[2].age = 45;
-    strcpy(candidates[2].manifesto, "Environmental protection");
-    candidates[2].id = 3;
-    candidates[2].votes = 8;
-    
-    // Add some test users
-    userCount = 50;
-    for(int i = 0; i < 35; i++) {
-        users[i].hasVoted = 1;
-    }
+    // Load existing data from files
+    loadData();
     
     printf("\n========================================\n");
-    printf("   ADMIN PANEL MODULE - PART 1\n");
-    printf("   (First 4 Functions Only)\n");
+    printf("   ADMIN PANEL MODULE\n");
     printf("========================================\n");
     
     adminPanel();

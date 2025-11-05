@@ -1,1 +1,5 @@
+[2025-10-29 08:29:46] User registered
+[2025-10-29 08:29:59] User logged in - User: Naharul Islam (NID: 12345678910)
+[2025-11-05 14:10:41] Backup created
+[2025-11-05 14:10:41] System shutdown
 [2025-11-03 19:39:04] Admin logged in
